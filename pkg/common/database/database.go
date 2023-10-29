@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"go-cart/pkg/common/env"
+	"go-cart/pkg/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -31,5 +32,8 @@ func getClient() *gorm.DB {
 }
 
 func autoMigrate() error {
-	return nil
+	var err error
+	err = db.AutoMigrate(&models.User{})
+
+	return err
 }
