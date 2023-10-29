@@ -23,7 +23,7 @@ func Initialize() error {
 	return autoMigrate()
 }
 
-func getClient() *gorm.DB {
+func GetClient() *gorm.DB {
 	if db == nil {
 		panic("database connection has not been established yet! please connect to the database first")
 	}

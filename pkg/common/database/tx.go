@@ -17,7 +17,7 @@ func NewTransactionExecutor() TransactionExecutor {
 }
 
 func (t transactionExecutorImpl) Exec(fn func(tx *gorm.DB) error, readOnly bool) error {
-	transaction := getClient().Begin(&sql.TxOptions{ReadOnly: readOnly})
+	transaction := GetClient().Begin(&sql.TxOptions{ReadOnly: readOnly})
 
 	if err := fn(transaction); err != nil {
 		transaction.Rollback()
