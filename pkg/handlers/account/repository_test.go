@@ -15,12 +15,12 @@ var (
 	underTest     accountRepository            = newAccountRepository()
 )
 
-func Test_ExistsByEmail_NotFound(t *testing.T) {
+func Test_FindByEmail_NotFound(t *testing.T) {
 	defer fixtures.ClearTables("users")
 	fixtures.LoadFixtures(t, fixtureFolder, "users.yml")
 
 	err := txExecutor.Exec(func(tx *gorm.DB) error {
-		err := underTest.existsByEmail(tx, "testing+02@gocart.app")
+		_, err := underTest.findByEmail(tx, "testing+02@gocart.app")
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
@@ -33,12 +33,12 @@ func Test_ExistsByEmail_NotFound(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func Test_ExistsByEmail_Found(t *testing.T) {
+func Test_FindByEmail_Found(t *testing.T) {
 	defer fixtures.ClearTables("users")
 	fixtures.LoadFixtures(t, fixtureFolder, "users.yml")
 
 	err := txExecutor.Exec(func(tx *gorm.DB) error {
-		err := underTest.existsByEmail(tx, "testing+01@gocart.app")
+		_, err := underTest.findByEmail(tx, "testing+01@gocart.app")
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}

@@ -6,7 +6,7 @@ import (
 )
 
 type accountRepository interface {
-	existsByEmail(tx *gorm.DB, email string) error
+	findByEmail(tx *gorm.DB, email string) (models.User, error)
 	save(tx *gorm.DB, user models.User) error
 }
 
@@ -17,10 +17,10 @@ func newAccountRepository() accountRepository {
 	return accountRepositoryImpl{}
 }
 
-func (r accountRepositoryImpl) existsByEmail(tx *gorm.DB, email string) error {
+func (r accountRepositoryImpl) findByEmail(tx *gorm.DB, email string) (models.User, error) {
 	var result models.User
 	err := tx.Model(&models.User{}).Where("email = ?", email).Take(&result).Error
-	return err
+	return result, err
 }
 
 func (r accountRepositoryImpl) save(tx *gorm.DB, user models.User) error {

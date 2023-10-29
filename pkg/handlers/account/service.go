@@ -4,16 +4,18 @@ import (
 	"errors"
 	"github.com/labstack/echo/v4"
 	"go-cart/pkg/common/database"
+	jwtService "go-cart/pkg/common/jwt_service"
 	"go-cart/pkg/common/types"
 	"go-cart/pkg/models"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"net/http"
-	"net/mail"
+	"time"
 )
 
 type accountService interface {
 	signUp(user models.User) (echo.Map, error)
+	signIn(userParams signInParams) (echo.Map, error)
 }
 
 type accountServiceImpl struct {
@@ -29,12 +31,8 @@ func newAccountService(txExecutor database.TransactionExecutor, repository accou
 }
 
 func (s accountServiceImpl) signUp(user models.User) (echo.Map, error) {
-	if _, err := mail.ParseAddress(user.Email); err != nil {
-		return echo.Map{}, echo.NewHTTPError(http.StatusBadRequest, "invalid email given")
-	}
-
 	err := s.txExecutor.Exec(func(tx *gorm.DB) error {
-		err := s.repository.existsByEmail(tx, user.Email)
+		_, err := s.repository.findByEmail(tx, user.Email)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
@@ -57,5 +55,34 @@ func (s accountServiceImpl) signUp(user models.User) (echo.Map, error) {
 
 		return nil
 	}, false)
-	return echo.Map{"success": true, "data": "user created successfully"}, err
+	if err != nil {
+		return echo.Map{}, err
+	}
+
+	return echo.Map{"success": true, "data": "user created successfully"}, nil
+}
+
+func (s accountServiceImpl) signIn(userParams signInParams) (echo.Map, error) {
+	var token string
+	err := s.txExecutor.Exec(func(tx *gorm.DB) error {
+		dbUser, err := s.repository.findByEmail(tx, userParams.Email)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return echo.NewHTTPError(http.StatusNotFound, "email or password is incorrect")
+			}
+			return err
+		}
+		err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(userParams.Password))
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, "email or password is incorrect")
+		}
+
+		token = jwtService.SignJwt(dbUser.Email, dbUser.Role, time.Now().Add(24*time.Hour))
+		return nil
+	}, true)
+	if err != nil {
+		return echo.Map{}, err
+	}
+
+	return echo.Map{"success": true, "data": token}, nil
 }

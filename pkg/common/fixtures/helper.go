@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func init() {
+func LoadFixtures(t *testing.T, fixtureFolder string, fileNames ...string) {
 	err := env.Load()
 	if err != nil {
 		log.Fatal(err)
@@ -18,9 +18,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
 
-func LoadFixtures(t *testing.T, fixtureFolder string, fileNames ...string) {
 	helper := testfixtures.PostgreSQL{
 		UseAlterConstraint: false,
 		SkipResetSequences: true,

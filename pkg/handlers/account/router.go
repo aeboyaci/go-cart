@@ -12,4 +12,5 @@ func RegisterRouter(apiRouter *echo.Group) {
 
 	accountRouter := apiRouter.Group("/account")
 	accountRouter.POST("/sign-up", controller.signUp)
+	accountRouter.POST("/sign-in", controller.signIn)
 }

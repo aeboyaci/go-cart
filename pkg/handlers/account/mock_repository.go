@@ -14,18 +14,28 @@ type mockAccountRepositoryImpl struct {
 	mock.Mock
 }
 
-// existsByEmail provides a mock function with given fields: tx, email
-func (_m *mockAccountRepositoryImpl) existsByEmail(tx *gorm.DB, email string) error {
+// findByEmail provides a mock function with given fields: tx, email
+func (_m *mockAccountRepositoryImpl) findByEmail(tx *gorm.DB, email string) (models.User, error) {
 	ret := _m.Called(tx, email)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorm.DB, string) error); ok {
+	var r0 models.User
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*gorm.DB, string) (models.User, error)); ok {
+		return rf(tx, email)
+	}
+	if rf, ok := ret.Get(0).(func(*gorm.DB, string) models.User); ok {
 		r0 = rf(tx, email)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(models.User)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(*gorm.DB, string) error); ok {
+		r1 = rf(tx, email)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // save provides a mock function with given fields: tx, user
