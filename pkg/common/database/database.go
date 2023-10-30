@@ -33,7 +33,16 @@ func GetClient() *gorm.DB {
 
 func autoMigrate() error {
 	var err error
-	err = db.AutoMigrate(&models.User{})
 
-	return err
+	err = db.AutoMigrate(&models.User{})
+	if err != nil {
+		return err
+	}
+
+	err = db.AutoMigrate(&models.Product{})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

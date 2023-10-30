@@ -20,31 +20,31 @@ func newAccountController(accountService accountService) accountController {
 func (c accountController) signUp(ctx echo.Context) error {
 	var user models.User
 	if err := ctx.Bind(&user); err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON body sent")
 	}
 	if err := validator.Validate(user); err != nil {
 		return err
 	}
 
-	result, err := c.service.signUp(user)
+	err := c.service.signUp(user)
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(http.StatusCreated, result)
+	return ctx.JSON(http.StatusCreated, echo.Map{"success": true, "data": "user created successfully"})
 }
 
 func (c accountController) signIn(ctx echo.Context) error {
 	var userParams signInParams
 	if err := ctx.Bind(&userParams); err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON body sent")
 	}
 	if err := validator.Validate(userParams); err != nil {
 		return err
 	}
 
-	result, err := c.service.signIn(userParams)
+	token, err := c.service.signIn(userParams)
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(http.StatusOK, result)
+	return ctx.JSON(http.StatusOK, echo.Map{"success": true, "data": token})
 }

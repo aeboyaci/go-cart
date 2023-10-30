@@ -14,8 +14,8 @@ import (
 )
 
 type accountService interface {
-	signUp(user models.User) (echo.Map, error)
-	signIn(userParams signInParams) (echo.Map, error)
+	signUp(user models.User) error
+	signIn(userParams signInParams) (string, error)
 }
 
 type accountServiceImpl struct {
@@ -30,7 +30,7 @@ func newAccountService(txExecutor database.TransactionExecutor, repository accou
 	}
 }
 
-func (s accountServiceImpl) signUp(user models.User) (echo.Map, error) {
+func (s accountServiceImpl) signUp(user models.User) error {
 	err := s.txExecutor.Exec(func(tx *gorm.DB) error {
 		_, err := s.repository.findByEmail(tx, user.Email)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -56,13 +56,13 @@ func (s accountServiceImpl) signUp(user models.User) (echo.Map, error) {
 		return nil
 	}, false)
 	if err != nil {
-		return echo.Map{}, err
+		return err
 	}
 
-	return echo.Map{"success": true, "data": "user created successfully"}, nil
+	return nil
 }
 
-func (s accountServiceImpl) signIn(userParams signInParams) (echo.Map, error) {
+func (s accountServiceImpl) signIn(userParams signInParams) (string, error) {
 	var token string
 	err := s.txExecutor.Exec(func(tx *gorm.DB) error {
 		dbUser, err := s.repository.findByEmail(tx, userParams.Email)
@@ -81,8 +81,8 @@ func (s accountServiceImpl) signIn(userParams signInParams) (echo.Map, error) {
 		return nil
 	}, true)
 	if err != nil {
-		return echo.Map{}, err
+		return token, err
 	}
 
-	return echo.Map{"success": true, "data": token}, nil
+	return token, nil
 }

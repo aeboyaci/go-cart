@@ -5,6 +5,7 @@ import (
 	"go-cart/pkg/common/database"
 	"go-cart/pkg/common/env"
 	"go-cart/pkg/handlers/account"
+	"go-cart/pkg/handlers/products"
 	"net/http"
 )
 
@@ -26,11 +27,8 @@ func RegisterRouters(e *echo.Echo) {
 	e.HTTPErrorHandler = customHttpErrorHandler
 	apiRouter := e.Group("/api")
 
-	e.GET("/ping", func(c echo.Context) error {
-		return c.String(http.StatusOK, "PONG!")
-	})
-
 	account.RegisterRouter(apiRouter)
+	products.RegisterRouter(apiRouter)
 }
 
 func customHttpErrorHandler(err error, c echo.Context) {
@@ -40,6 +38,7 @@ func customHttpErrorHandler(err error, c echo.Context) {
 		statusCode = he.Code
 		errorMessage = he.Message
 	}
+	c.Logger().Error(err)
 
 	err = c.JSON(statusCode, echo.Map{
 		"success": false,
