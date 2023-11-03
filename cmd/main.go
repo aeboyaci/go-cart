@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"go-cart/pkg/common/bootstrap"
+	"go-cart/pkg/bootstrap"
 	"log"
 )
 
