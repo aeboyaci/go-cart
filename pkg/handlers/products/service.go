@@ -9,29 +9,29 @@ import (
 	"net/http"
 )
 
-type productService interface {
-	addProduct(product models.Product) error
-	updateProduct(productId string, product models.Product) (models.Product, error)
-	deleteProduct(productId string) error
-	getAllProducts() ([]models.Product, error)
-	getProductById(productId string) (models.Product, error)
+type Service interface {
+	AddProduct(product models.Product) error
+	UpdateProduct(productId string, product models.Product) (models.Product, error)
+	DeleteProduct(productId string) error
+	GetAllProducts() ([]models.Product, error)
+	GetProductById(productId string) (models.Product, error)
 }
 
 type productServiceImpl struct {
 	txExecutor database.TransactionExecutor
-	repository productRepository
+	repository Repository
 }
 
-func newProductService(txExecutor database.TransactionExecutor, repository productRepository) productService {
+func NewService(txExecutor database.TransactionExecutor, repository Repository) Service {
 	return productServiceImpl{
 		txExecutor: txExecutor,
 		repository: repository,
 	}
 }
 
-func (s productServiceImpl) addProduct(product models.Product) error {
+func (s productServiceImpl) AddProduct(product models.Product) error {
 	err := s.txExecutor.Exec(func(tx *gorm.DB) error {
-		err := s.repository.save(tx, product)
+		err := s.repository.Save(tx, product)
 		if err != nil {
 			return err
 		}
@@ -45,17 +45,17 @@ func (s productServiceImpl) addProduct(product models.Product) error {
 	return nil
 }
 
-func (s productServiceImpl) updateProduct(productId string, product models.Product) (models.Product, error) {
-	if product.Price <= 0 {
+func (s productServiceImpl) UpdateProduct(productId string, product models.Product) (models.Product, error) {
+	if product.Price < 0 {
 		return models.Product{}, echo.NewHTTPError(http.StatusBadRequest, "price has to be a positive number")
 	}
-	if product.QuantityAvailable <= 0 {
+	if product.QuantityAvailable < 0 {
 		return models.Product{}, echo.NewHTTPError(http.StatusBadRequest, "quantity has to be positive number")
 	}
 
 	var result models.Product
 	err := s.txExecutor.Exec(func(tx *gorm.DB) error {
-		_, err := s.repository.findById(tx, productId)
+		_, err := s.repository.FindById(tx, productId)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return echo.NewHTTPError(http.StatusNotFound, "product does not exist")
@@ -63,7 +63,7 @@ func (s productServiceImpl) updateProduct(productId string, product models.Produ
 			return err
 		}
 
-		result, err = s.repository.updateById(tx, productId, product)
+		result, err = s.repository.UpdateById(tx, productId, product)
 		if err != nil {
 			return err
 		}
@@ -77,9 +77,9 @@ func (s productServiceImpl) updateProduct(productId string, product models.Produ
 	return result, nil
 }
 
-func (s productServiceImpl) deleteProduct(productId string) error {
+func (s productServiceImpl) DeleteProduct(productId string) error {
 	err := s.txExecutor.Exec(func(tx *gorm.DB) error {
-		_, err := s.repository.findById(tx, productId)
+		_, err := s.repository.FindById(tx, productId)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return echo.NewHTTPError(http.StatusNotFound, "product does not exist")
@@ -87,7 +87,7 @@ func (s productServiceImpl) deleteProduct(productId string) error {
 			return err
 		}
 
-		err = s.repository.deleteById(tx, productId)
+		err = s.repository.DeleteById(tx, productId)
 		if err != nil {
 			return err
 		}
@@ -101,12 +101,12 @@ func (s productServiceImpl) deleteProduct(productId string) error {
 	return nil
 }
 
-func (s productServiceImpl) getAllProducts() ([]models.Product, error) {
+func (s productServiceImpl) GetAllProducts() ([]models.Product, error) {
 	products := make([]models.Product, 0)
 
 	err := s.txExecutor.Exec(func(tx *gorm.DB) error {
 		var err error
-		products, err = s.repository.findAll(tx)
+		products, err = s.repository.FindAll(tx)
 		if err != nil {
 			return err
 		}
@@ -120,12 +120,12 @@ func (s productServiceImpl) getAllProducts() ([]models.Product, error) {
 	return products, nil
 }
 
-func (s productServiceImpl) getProductById(productId string) (models.Product, error) {
+func (s productServiceImpl) GetProductById(productId string) (models.Product, error) {
 	var product models.Product
 
 	err := s.txExecutor.Exec(func(tx *gorm.DB) error {
 		var err error
-		product, err = s.repository.findById(tx, productId)
+		product, err = s.repository.FindById(tx, productId)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return echo.NewHTTPError(http.StatusNotFound, "product does not exist")

@@ -7,16 +7,16 @@ import (
 )
 
 func RegisterRouter(apiRouter *echo.Group) {
-	controller := newProductController(
-		newProductService(database.NewTransactionExecutor(), newProductRepository()),
+	controller := NewController(
+		NewService(database.NewTransactionExecutor(), newProductRepository()),
 	)
 
 	adminProtectedProductsRouter := apiRouter.Group("/products", middlewares.EnforceAdminAuthentication())
-	adminProtectedProductsRouter.POST("/", controller.addProduct)
-	adminProtectedProductsRouter.PUT("/:id", controller.updateProduct)
-	adminProtectedProductsRouter.DELETE("/:id", controller.deleteProduct)
+	adminProtectedProductsRouter.POST("/", controller.AddProduct)
+	adminProtectedProductsRouter.PUT("/:id", controller.UpdateProduct)
+	adminProtectedProductsRouter.DELETE("/:id", controller.DeleteProduct)
 
 	productsRouter := apiRouter.Group("/products")
-	productsRouter.GET("/", controller.getAllProducts)
-	productsRouter.GET("/:id", controller.getProductById)
+	productsRouter.GET("/", controller.GetAllProducts)
+	productsRouter.GET("/:id", controller.GetProductById)
 }

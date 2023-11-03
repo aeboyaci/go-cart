@@ -7,17 +7,17 @@ import (
 	"net/http"
 )
 
-type productController struct {
-	service productService
+type Controller struct {
+	service Service
 }
 
-func newProductController(productService productService) productController {
-	return productController{
+func NewController(productService Service) Controller {
+	return Controller{
 		service: productService,
 	}
 }
 
-func (c productController) addProduct(ctx echo.Context) error {
+func (c Controller) AddProduct(ctx echo.Context) error {
 	var product models.Product
 	if err := ctx.Bind(&product); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON body sent")
@@ -26,14 +26,14 @@ func (c productController) addProduct(ctx echo.Context) error {
 		return err
 	}
 
-	err := c.service.addProduct(product)
+	err := c.service.AddProduct(product)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(http.StatusCreated, echo.Map{"success": true, "data": "product added successfully"})
 }
 
-func (c productController) updateProduct(ctx echo.Context) error {
+func (c Controller) UpdateProduct(ctx echo.Context) error {
 	var product models.Product
 	if err := ctx.Bind(&product); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON body sent")
@@ -41,35 +41,35 @@ func (c productController) updateProduct(ctx echo.Context) error {
 	// Note that to allow empty values on update, parameter validation is not applied
 	productId := ctx.Param("id")
 
-	result, err := c.service.updateProduct(productId, product)
+	result, err := c.service.UpdateProduct(productId, product)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(http.StatusOK, echo.Map{"success": true, "data": result})
 }
 
-func (c productController) deleteProduct(ctx echo.Context) error {
+func (c Controller) DeleteProduct(ctx echo.Context) error {
 	productId := ctx.Param("id")
 
-	err := c.service.deleteProduct(productId)
+	err := c.service.DeleteProduct(productId)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(http.StatusOK, echo.Map{"success": true, "data": "product deleted successfully"})
 }
 
-func (c productController) getAllProducts(ctx echo.Context) error {
-	result, err := c.service.getAllProducts()
+func (c Controller) GetAllProducts(ctx echo.Context) error {
+	result, err := c.service.GetAllProducts()
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(http.StatusOK, echo.Map{"success": true, "data": result})
 }
 
-func (c productController) getProductById(ctx echo.Context) error {
+func (c Controller) GetProductById(ctx echo.Context) error {
 	productId := ctx.Param("id")
 
-	result, err := c.service.getProductById(productId)
+	result, err := c.service.GetProductById(productId)
 	if err != nil {
 		return err
 	}

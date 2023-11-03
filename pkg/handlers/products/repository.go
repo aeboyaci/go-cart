@@ -6,26 +6,26 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type productRepository interface {
-	save(tx *gorm.DB, product models.Product) error
-	findById(tx *gorm.DB, productId string) (models.Product, error)
-	updateById(tx *gorm.DB, productId string, product models.Product) (models.Product, error)
-	deleteById(tx *gorm.DB, productId string) error
-	findAll(tx *gorm.DB) ([]models.Product, error)
+type Repository interface {
+	Save(tx *gorm.DB, product models.Product) error
+	FindById(tx *gorm.DB, productId string) (models.Product, error)
+	UpdateById(tx *gorm.DB, productId string, product models.Product) (models.Product, error)
+	DeleteById(tx *gorm.DB, productId string) error
+	FindAll(tx *gorm.DB) ([]models.Product, error)
 }
 
 type productRepositoryImpl struct {
 }
 
-func newProductRepository() productRepository {
+func newProductRepository() Repository {
 	return productRepositoryImpl{}
 }
 
-func (p productRepositoryImpl) save(tx *gorm.DB, product models.Product) error {
+func (p productRepositoryImpl) Save(tx *gorm.DB, product models.Product) error {
 	return tx.Create(&product).Error
 }
 
-func (p productRepositoryImpl) findById(tx *gorm.DB, productId string) (models.Product, error) {
+func (p productRepositoryImpl) FindById(tx *gorm.DB, productId string) (models.Product, error) {
 	var product models.Product
 	err := tx.
 		Model(&models.Product{}).
@@ -35,7 +35,7 @@ func (p productRepositoryImpl) findById(tx *gorm.DB, productId string) (models.P
 	return product, err
 }
 
-func (p productRepositoryImpl) updateById(tx *gorm.DB, productId string, product models.Product) (models.Product, error) {
+func (p productRepositoryImpl) UpdateById(tx *gorm.DB, productId string, product models.Product) (models.Product, error) {
 	err := tx.
 		Model(&models.Product{}).
 		Clauses(clause.Returning{}).
@@ -45,13 +45,13 @@ func (p productRepositoryImpl) updateById(tx *gorm.DB, productId string, product
 	return product, err
 }
 
-func (p productRepositoryImpl) deleteById(tx *gorm.DB, productId string) error {
+func (p productRepositoryImpl) DeleteById(tx *gorm.DB, productId string) error {
 	return tx.
 		Delete(&models.Product{}, productId).
 		Error
 }
 
-func (p productRepositoryImpl) findAll(tx *gorm.DB) ([]models.Product, error) {
+func (p productRepositoryImpl) FindAll(tx *gorm.DB) ([]models.Product, error) {
 	var products []models.Product
 	err := tx.
 		Model(&models.Product{}).
