@@ -17,7 +17,7 @@ type Repository interface {
 type productRepositoryImpl struct {
 }
 
-func newProductRepository() Repository {
+func NewRepository() Repository {
 	return productRepositoryImpl{}
 }
 

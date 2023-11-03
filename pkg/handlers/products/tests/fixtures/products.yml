@@ -1,0 +1,11 @@
+- id: 9020ac0b-2a5a-4f40-8211-1f8871a93fb1
+  name: "Product - 1"
+  description: "First product in the database"
+  price: 150
+  quantity_available: 5
+
+- id: 12459e40-401c-473f-a337-830df76e8032
+  name: "Product - 2"
+  description: "Second product in the database"
+  price: 350
+  quantity_available: 15

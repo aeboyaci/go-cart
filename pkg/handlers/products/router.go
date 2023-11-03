@@ -8,7 +8,7 @@ import (
 
 func RegisterRouter(apiRouter *echo.Group) {
 	controller := NewController(
-		NewService(database.NewTransactionExecutor(), newProductRepository()),
+		NewService(database.NewTransactionExecutor(), NewRepository()),
 	)
 
 	adminProtectedProductsRouter := apiRouter.Group("/products", middlewares.EnforceAdminAuthentication())
