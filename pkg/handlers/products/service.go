@@ -112,7 +112,7 @@ func (s productServiceImpl) getAllProducts() ([]models.Product, error) {
 		}
 
 		return nil
-	}, false)
+	}, true)
 	if err != nil {
 		return products, err
 	}
@@ -127,11 +127,14 @@ func (s productServiceImpl) getProductById(productId string) (models.Product, er
 		var err error
 		product, err = s.repository.findById(tx, productId)
 		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return echo.NewHTTPError(http.StatusNotFound, "product does not exist")
+			}
 			return err
 		}
 
 		return nil
-	}, false)
+	}, true)
 	if err != nil {
 		return product, err
 	}

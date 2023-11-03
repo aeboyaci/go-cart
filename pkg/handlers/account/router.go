@@ -6,11 +6,11 @@ import (
 )
 
 func RegisterRouter(apiRouter *echo.Group) {
-	controller := newAccountController(
-		newAccountService(database.NewTransactionExecutor(), newAccountRepository()),
+	controller := NewController(
+		NewService(database.NewTransactionExecutor(), NewRepository()),
 	)
 
 	accountRouter := apiRouter.Group("/account")
-	accountRouter.POST("/sign-up", controller.signUp)
-	accountRouter.POST("/sign-in", controller.signIn)
+	accountRouter.POST("/sign-up", controller.SignUp)
+	accountRouter.POST("/sign-in", controller.SignIn)
 }

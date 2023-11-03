@@ -13,26 +13,26 @@ import (
 	"time"
 )
 
-type accountService interface {
-	signUp(user models.User) error
-	signIn(userParams signInParams) (string, error)
+type Service interface {
+	SignUp(user models.User) error
+	SignIn(userParams SignInParams) (string, error)
 }
 
 type accountServiceImpl struct {
 	txExecutor database.TransactionExecutor
-	repository accountRepository
+	repository Repository
 }
 
-func newAccountService(txExecutor database.TransactionExecutor, repository accountRepository) accountService {
+func NewService(txExecutor database.TransactionExecutor, repository Repository) Service {
 	return accountServiceImpl{
 		txExecutor: txExecutor,
 		repository: repository,
 	}
 }
 
-func (s accountServiceImpl) signUp(user models.User) error {
+func (s accountServiceImpl) SignUp(user models.User) error {
 	err := s.txExecutor.Exec(func(tx *gorm.DB) error {
-		_, err := s.repository.findByEmail(tx, user.Email)
+		_, err := s.repository.FindByEmail(tx, user.Email)
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
@@ -48,7 +48,7 @@ func (s accountServiceImpl) signUp(user models.User) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "cannot hash password")
 		}
 		user.Password = string(hashedPasswordBytes)
-		err = s.repository.save(tx, user)
+		err = s.repository.Save(tx, user)
 		if err != nil {
 			return err
 		}
@@ -62,10 +62,10 @@ func (s accountServiceImpl) signUp(user models.User) error {
 	return nil
 }
 
-func (s accountServiceImpl) signIn(userParams signInParams) (string, error) {
+func (s accountServiceImpl) SignIn(userParams SignInParams) (string, error) {
 	var token string
 	err := s.txExecutor.Exec(func(tx *gorm.DB) error {
-		dbUser, err := s.repository.findByEmail(tx, userParams.Email)
+		dbUser, err := s.repository.FindByEmail(tx, userParams.Email)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return echo.NewHTTPError(http.StatusNotFound, "email or password is incorrect")

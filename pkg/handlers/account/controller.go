@@ -7,17 +7,17 @@ import (
 	"net/http"
 )
 
-type accountController struct {
-	service accountService
+type Controller struct {
+	service Service
 }
 
-func newAccountController(accountService accountService) accountController {
-	return accountController{
+func NewController(accountService Service) Controller {
+	return Controller{
 		service: accountService,
 	}
 }
 
-func (c accountController) signUp(ctx echo.Context) error {
+func (c Controller) SignUp(ctx echo.Context) error {
 	var user models.User
 	if err := ctx.Bind(&user); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON body sent")
@@ -26,15 +26,15 @@ func (c accountController) signUp(ctx echo.Context) error {
 		return err
 	}
 
-	err := c.service.signUp(user)
+	err := c.service.SignUp(user)
 	if err != nil {
 		return err
 	}
 	return ctx.JSON(http.StatusCreated, echo.Map{"success": true, "data": "user created successfully"})
 }
 
-func (c accountController) signIn(ctx echo.Context) error {
-	var userParams signInParams
+func (c Controller) SignIn(ctx echo.Context) error {
+	var userParams SignInParams
 	if err := ctx.Bind(&userParams); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON body sent")
 	}
@@ -42,7 +42,7 @@ func (c accountController) signIn(ctx echo.Context) error {
 		return err
 	}
 
-	token, err := c.service.signIn(userParams)
+	token, err := c.service.SignIn(userParams)
 	if err != nil {
 		return err
 	}

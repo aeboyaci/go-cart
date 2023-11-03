@@ -12,6 +12,10 @@ import (
 var db *gorm.DB
 
 func Initialize() error {
+	if db != nil {
+		return nil
+	}
+
 	var err error
 	db, err = gorm.Open(postgres.Open(env.DB_URL), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),

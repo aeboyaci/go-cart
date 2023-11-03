@@ -1,6 +1,6 @@
 package account
 
-type signInParams struct {
+type SignInParams struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }

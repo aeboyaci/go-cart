@@ -1,10 +1,11 @@
-package account
+package tests
 
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go-cart/pkg/common/database"
 	"go-cart/pkg/common/types"
+	"go-cart/pkg/handlers/account"
 	"go-cart/pkg/models"
 	"gorm.io/gorm"
 	"testing"
@@ -12,9 +13,9 @@ import (
 
 var tx *gorm.DB
 
-func setUpSuite(t *testing.T) (accountService, *mockAccountRepositoryImpl) {
-	mockRepository := newMockAccountRepositoryImpl(t)
-	underTest := newAccountService(
+func setUpSuite(t *testing.T) (account.Service, *mockRepositoryImpl) {
+	mockRepository := newMockRepositoryImpl(t)
+	underTest := account.NewService(
 		database.NewMockTransactionExecutor(),
 		mockRepository,
 	)
@@ -31,10 +32,10 @@ func Test_SignUp_Fail_EmailTaken(t *testing.T) {
 		Role:      types.Customer,
 	}
 	mockRepository.
-		On("findByEmail", tx, mock.Anything).
+		On("FindByEmail", tx, mock.Anything).
 		Return(user, nil)
 
-	_, err := underTest.signUp(user)
+	err := underTest.SignUp(user)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "email taken")
 }
@@ -48,28 +49,28 @@ func Test_SignUp_Success(t *testing.T) {
 		Role:      types.Customer,
 	}
 	mockRepository.
-		On("findByEmail", tx, user.Email).
+		On("FindByEmail", tx, user.Email).
 		Return(models.User{}, gorm.ErrRecordNotFound)
 	mockRepository.
-		On("save", tx, mock.Anything).
+		On("Save", tx, mock.Anything).
 		Return(nil)
 
-	_, err := underTest.signUp(user)
+	err := underTest.SignUp(user)
 	assert.Nil(t, err)
 }
 
 func Test_SignIn_Fail_WrongEmail(t *testing.T) {
 	underTest, mockRepository := setUpSuite(t)
 
-	userParams := signInParams{
+	userParams := account.SignInParams{
 		Email:    "testing+02@gocart.app",
 		Password: "123456",
 	}
 	mockRepository.
-		On("findByEmail", tx, userParams.Email).
+		On("FindByEmail", tx, userParams.Email).
 		Return(models.User{}, gorm.ErrRecordNotFound)
 
-	_, err := underTest.signIn(userParams)
+	_, err := underTest.SignIn(userParams)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "email or password is incorrect")
 }
@@ -77,7 +78,7 @@ func Test_SignIn_Fail_WrongEmail(t *testing.T) {
 func Test_SignIn_Fail_WrongPassword(t *testing.T) {
 	underTest, mockRepository := setUpSuite(t)
 
-	userParams := signInParams{
+	userParams := account.SignInParams{
 		Email:    "testing+01@gocart.app",
 		Password: "random value",
 	}
@@ -89,10 +90,10 @@ func Test_SignIn_Fail_WrongPassword(t *testing.T) {
 	}
 
 	mockRepository.
-		On("findByEmail", tx, userParams.Email).
+		On("FindByEmail", tx, userParams.Email).
 		Return(user, nil)
 
-	_, err := underTest.signIn(userParams)
+	_, err := underTest.SignIn(userParams)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "email or password is incorrect")
 }
@@ -100,7 +101,7 @@ func Test_SignIn_Fail_WrongPassword(t *testing.T) {
 func Test_SignIn_Success(t *testing.T) {
 	underTest, mockRepository := setUpSuite(t)
 
-	userParams := signInParams{
+	userParams := account.SignInParams{
 		Email:    "testing+01@gocart.app",
 		Password: "123456",
 	}
@@ -112,11 +113,10 @@ func Test_SignIn_Success(t *testing.T) {
 	}
 
 	mockRepository.
-		On("findByEmail", tx, userParams.Email).
+		On("FindByEmail", tx, userParams.Email).
 		Return(user, nil)
 
-	result, err := underTest.signIn(userParams)
+	result, err := underTest.SignIn(userParams)
 	assert.Nil(t, err)
-	assert.NotNil(t, result["data"])
-	assert.NotEqual(t, result["data"], "")
+	assert.NotEqual(t, result, "")
 }
